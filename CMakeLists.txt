@@ -3,7 +3,7 @@ project(myjson5)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(myjson5
+add_executable(JsonC
         include/json_impl.h
         src/json_impl.cpp
         include/parser.h
