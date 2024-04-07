@@ -1,0 +1,3 @@
+/Users/baitianyu/CLionProjects/JsonC/cmake-build-debug/CMakeFiles/myjson5.dir
+/Users/baitianyu/CLionProjects/JsonC/cmake-build-debug/CMakeFiles/edit_cache.dir
+/Users/baitianyu/CLionProjects/JsonC/cmake-build-debug/CMakeFiles/rebuild_cache.dir

@@ -1,0 +1,6 @@
+# ninja log v5
+5	448	1712487655690503694	CMakeFiles/myjson5.dir/src/parser.cpp.o	2dddc99488b91b36
+6	437	1712485865472576201	CMakeFiles/myjson5.dir/src/json_impl.cpp.o	f162d9a6e8fb01d4
+6	384	1712487699945376503	CMakeFiles/myjson5.dir/src/test.cpp.o	fad6d54203d2d33b
+1	59	1712488060810809877	build.ninja	8ae6aecc2565a013
+384	422	1712487699985993839	myjson5	83dacbf4cdc8c4e9

@@ -1,0 +1,32 @@
+return_type Parser::parse_null() {
+    EXPECT(v_ptr, 'n');
+    if (v_ptr[0] != 'u' || v_ptr[1] != 'l' || v_ptr[2] != 'l') {
+        type_ = L_None;
+        return L_PARSE_INVALID_VALUE;
+    }
+    v_ptr += 3;
+    type_ = L_NULL;
+    return L_PARSE_OK;
+}
+
+return_type Parser::parse_false() {
+    EXPECT(v_ptr, 'f');
+    if (v_ptr[0] != 'a' || v_ptr[1] != 'l' || v_ptr[2] != 's' || v_ptr[3] != 'e') {
+        type_ = L_None;
+        return L_PARSE_INVALID_VALUE;
+    }
+    v_ptr += 4;
+    type_ = L_FALSE;
+    return L_PARSE_OK;
+}
+
+return_type Parser::parse_true() {
+    EXPECT(v_ptr, 't');
+    if (v_ptr[0] != 'r' || v_ptr[1] != 'u' || v_ptr[2] != 'e') {
+        type_ = L_None;
+        return L_PARSE_INVALID_VALUE;
+    }
+    v_ptr += 3;
+    type_ = L_TRUE;
+    return L_PARSE_OK;
+}
