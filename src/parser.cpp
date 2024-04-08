@@ -6,23 +6,38 @@
 #include "../include/parser.h"
 #include "cerrno"
 #include "cstdlib"
+#include "unordered_map"
 
 using namespace json;
 
 #define EXPECT(c, ch) do { assert(*c == (ch)); c++; } while(0)
 
-double Parser::get_num_() {
+void prints(std::string str) {
+    std::cout << str << std::endl;
+}
+
+const std::unordered_map<std::string, Parser> &Parser::get_dict_() const {
+    assert(type_ == L_OBJECT);
+    return dict;
+}
+
+const double &Parser::get_num_() const {
     assert(type_ == L_NUMBER);
     return num_;
 }
 
-lept_type Parser::get_type_() {
+const lept_type &Parser::get_type_() const {
     return type_;
 }
 
-const std::string &Parser::get_string_() {
+const std::string &Parser::get_string_() const {
     assert(type_ == L_STRING);
     return str_;
+}
+
+const std::vector<Parser> &Parser::get_arr_() const {
+    assert(type_ == L_ARRAY);
+    return arr_;
 }
 
 // "\"Hello\\nWorld\""  ====>  "Hello\nWorld"
@@ -35,8 +50,18 @@ void Parser::seeALLStr() {
 }
 
 return_type Parser::parse_string() {
-    EXPECT(v_ptr, '\"');
     std::string tmp;
+    return_type res = parse_string_raw(tmp);
+    if (res == L_PARSE_OK) {
+        type_ = L_STRING;
+        str_ = tmp;
+    }
+    return res;
+}
+
+
+return_type Parser::parse_string_raw(std::string &tmp) {
+    EXPECT(v_ptr, '\"');
     const char *cur_ptr = v_ptr;
     unsigned u = 0, u2 = 0;
     while (*cur_ptr != '\"') {
@@ -111,8 +136,7 @@ return_type Parser::parse_string() {
     }
     // 更新字符串的位置,换到下一个点
     v_ptr = ++cur_ptr;
-    type_ = L_STRING;
-    str_ = tmp;
+    return L_PARSE_OK;
 }
 
 //'A' - 10：这个表达式计算出字符 'A' 对应的十六进制数字的值。
@@ -144,6 +168,7 @@ return_type Parser::parse_hex4(const char *&p, unsigned &u) {
         }
     }
 }
+
 
 // 需要看一下
 void Parser::parse_encode_utf8(std::string &tmp, unsigned &u) {
@@ -210,7 +235,6 @@ return_type Parser::parse_liter(const char *lit, lept_type cur_type) {
     v_ptr += i;
     type_ = cur_type;
     return L_PARSE_OK;
-
 }
 
 return_type Parser::parse_number() {
@@ -265,12 +289,115 @@ return_type Parser::parse_value() {
             return parse_liter("false", L_FALSE);
         case 'n':
             return parse_liter("null", L_NULL);
+        default:
+            return parse_number();
         case '\"':
             return parse_string();
+        case '[':
+            return parse_array();
+        case '{':
+            return parse_object();
         case '\0':
             type_ = L_None;
             return L_PARSE_EXPECT_VALUE;
-        default:
-            return parse_number();
     }
 }
+
+
+return_type Parser::parse_array() {
+    // Example:
+    // [
+    //        "Erich Gamma",
+    //        "Richard Helm",
+    //        "Ralph Johnson",
+    //        "John Vlissides"
+    //    ],
+    std::vector<Parser> tmp;
+    // 跳过左括号
+    EXPECT(v_ptr, '[');
+    // 左括号后是一个空白
+    parse_whitespace();
+    // 遇到数组的右括号，然后将当前字符位置右移一位，并将 Value 设置为数组 tmp
+    if (*v_ptr == ']') {
+        v_ptr++;
+        type_ = L_ARRAY;
+        arr_ = tmp;
+        return L_PARSE_OK;
+    }
+    while (1) {
+        // 开始parse value
+        return_type res = parse_value();
+        if (res != L_PARSE_OK) {
+            type_ = L_None;
+            return res;
+        }
+        // 将当前对象加入tmp
+        tmp.push_back(*this);
+        // 有时候逗号前面也会有空格
+        parse_whitespace();
+        if (*v_ptr == ',') {
+            v_ptr++;
+            // 逗号后面的空格
+            parse_whitespace();
+        } else if (*v_ptr == ']') {
+            // [ 1, 2, 3,] 不合法，所以要么判断下一个为,要么判断下一个为]，不能分开写两个if
+            v_ptr++;
+            type_ = L_ARRAY;
+            arr_ = tmp;
+            return L_PARSE_OK;
+        } else {
+            type_ = L_None;
+            return L_PARSE_MISS_COMMA_OR_SQUARE_BRACKET;
+        }
+    }
+}
+
+return_type Parser::parse_object() {
+    // { "n" : null , "f" : false }
+    std::unordered_map<std::string, Parser> tmp_dict;
+    std::string key;
+    EXPECT(v_ptr, '{');
+    parse_whitespace();
+    if (*v_ptr == '}') {
+        v_ptr++;
+        type_ = L_OBJECT;
+        dict = tmp_dict;
+        return L_PARSE_OK;
+    }
+    while (1) {
+        if (*v_ptr != '\"') {
+            return L_PARSE_MISS_KEY;
+        }
+        parse_string_raw(key);
+        parse_whitespace(); // 冒号前的空白
+        if (*v_ptr++ != ':') {
+            return L_PARSE_MISS_COLON;
+        }
+        parse_whitespace();
+        return_type res = parse_value();
+        if (res != L_PARSE_OK) {
+            type_ = L_None;
+            return res;
+        }
+        // 将当前的key和对象加入tmp_dict
+        tmp_dict.insert(std::pair<std::string, Parser>(key, *this));
+        // 把之前的key给clear了
+        key.clear();
+
+        // 逗号前面的
+        parse_whitespace();
+        if (*v_ptr == ',') {
+            v_ptr++;
+            parse_whitespace();
+        } else if (*v_ptr == '}') {
+            v_ptr++;
+            type_ = L_OBJECT;
+            dict = tmp_dict;
+            return L_PARSE_OK;
+        } else {
+            type_ = L_None;
+            return L_PARSE_MISS_COMMA_OR_CURLY_BRACKET;
+        }
+    }
+}
+

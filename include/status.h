@@ -4,7 +4,7 @@
 
 #ifndef MYJSON5_STATUS_H
 #define MYJSON5_STATUS_H
-namespace json{
+namespace json {
     // L_None: 非法字符
     enum lept_type {
         L_NULL, L_FALSE, L_TRUE, L_NUMBER, L_STRING, L_ARRAY, L_OBJECT, L_None
@@ -19,7 +19,11 @@ namespace json{
         L_PARSE_INVALID_UNICODE_HEX,
         L_PARSE_INVALID_UNICODE_SURROGATE,
         L_PARSE_INVALID_STRING_ESCAPE,
-        L_PARSE_INVALID_STRING_CHAR
+        L_PARSE_INVALID_STRING_CHAR,
+        L_PARSE_MISS_COMMA_OR_SQUARE_BRACKET,
+        L_PARSE_MISS_KEY,
+        L_PARSE_MISS_COLON,
+        L_PARSE_MISS_COMMA_OR_CURLY_BRACKET
     };
 }
 #endif //MYJSON5_STATUS_H

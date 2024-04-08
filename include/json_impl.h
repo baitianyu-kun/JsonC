@@ -9,20 +9,22 @@
 #include "string"
 #include "parser.h"
 #include "status.h"
+
 using namespace json;
 
 class Json {
 private:
     Parser parser;
-    lept_type type;
-    std::string str;
-    // 存数字
-    double num;
 public:
     return_type parse_json(const std::string &json_str);
-    double get_number();
-    lept_type get_type();
-    const std::string& get_string();
+
+    const double &get_number();
+
+    const lept_type &get_type();
+
+    const std::string &get_string();
+
+    const std::vector<Parser> &get_arr();
 };
 
 #endif //MYJSON5_JSON_IMPL_H

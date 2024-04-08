@@ -51,11 +51,64 @@ static int test_pass = 0;
         EXPECT_EQ_BASE(expect_str, str);\
     }while(0)
 
-#define TEST_STR_ERROR(expect_status, json_str) \
-    do{\
-        Json json1;\
-        EXPECT_EQ_BASE(expect_status, json1.parse_json(json_str));\
-    }while(0)
+static void TEST_ARR() {
+    std::string vec_str1 = "[ null , false , true , 0 , 1 , \"abc\" ]";
+    std::string vec_str2 = "[ [ ] , [ 0 ] , [ 0 , 1 ] , [ 0 , 1 , 2 ] , [ \"abc\" , 12 ] ]";
+    std::string vec_str3 = "[ ]";
+    Json json1;
+    json1.parse_json(vec_str1);
+    EXPECT_EQ_BASE(L_NULL, json1.get_arr()[0].get_type_());
+    EXPECT_EQ_BASE(L_FALSE, json1.get_arr()[1].get_type_());
+    EXPECT_EQ_BASE(L_TRUE, json1.get_arr()[2].get_type_());
+    EXPECT_EQ_BASE(0, json1.get_arr()[3].get_num_());
+    EXPECT_EQ_BASE(1, json1.get_arr()[4].get_num_());
+    EXPECT_EQ_BASE("abc", json1.get_arr()[5].get_string_());
+
+    json1.parse_json(vec_str2);
+    EXPECT_EQ_BASE(L_ARRAY, json1.get_arr()[0].get_type_());
+    EXPECT_EQ_BASE(L_ARRAY, json1.get_arr()[1].get_type_());
+    EXPECT_EQ_BASE(L_ARRAY, json1.get_arr()[2].get_type_());
+    EXPECT_EQ_BASE(L_ARRAY, json1.get_arr()[3].get_type_());
+    EXPECT_EQ_BASE(0, json1.get_arr()[3].get_arr_()[0].get_num_());
+    EXPECT_EQ_BASE(1, json1.get_arr()[3].get_arr_()[1].get_num_());
+    EXPECT_EQ_BASE(2, json1.get_arr()[3].get_arr_()[2].get_num_());
+    EXPECT_EQ_BASE("abc", json1.get_arr()[4].get_arr_()[0].get_string_());
+    EXPECT_EQ_BASE(12, json1.get_arr()[4].get_arr_()[1].get_num_());
+
+    json1.parse_json(vec_str3);
+    EXPECT_EQ_BASE(0, json1.get_arr().size());
+
+//    std::string vec_str1 = "[ \"abc\" ]";
+//    Json json1;
+//    json1.parse_json(vec_str1);
+//    EXPECT_EQ_BASE("abc",json1.get_arr()[0].get_string_());
+
+}
+
+static void TEST_OBJ() {
+
+    Parser parser;
+    std::string objs = " { "
+                       "\"n\" : null , "
+                       "\"f\" : false , "
+                       "\"t\" : true , "
+                       "\"i\" : 123 , "
+                       "\"s\" : \"abc\", "
+                       "\"a\" : [ 1, 2, 3 ],"
+                       "\"o\" : { \"1\" : 1, \"2\" : 2, \"3\" : 3 }"
+                       " } ";
+    // { "n" : null , "f" : false , "t" : true , "i" : 123 , "s" : "abc", "a" : [ 1, 2, 3 ],"o" : { "1" : 1, "2" : 2, "3" : 3 } }
+    parser.parse(objs);
+    std::unordered_map<std::string, Parser> dict = parser.get_dict_();
+    EXPECT_EQ_BASE(L_NULL, dict["n"].get_type_());
+    EXPECT_EQ_BASE(L_FALSE, dict["f"].get_type_());
+    EXPECT_EQ_BASE(L_TRUE, dict["t"].get_type_());
+    EXPECT_EQ_BASE(123, dict["i"].get_num_());
+    EXPECT_EQ_BASE("abc", dict["s"].get_string_());
+    EXPECT_EQ_BASE(3, dict["a"].get_arr_().size());
+    std::unordered_map<std::string, Parser> dict2 = dict["o"].get_dict_();
+    EXPECT_EQ_BASE(1, dict2["1"].get_num_());
+}
 
 static void TEST_STRS() {
     // \x是转义字符，告诉编译器需要用特殊的方式进行处理。 \x表示后面的字符是十六进制数，\0表示后面的字符是八进制数。
@@ -118,7 +171,9 @@ static void TEST_NULL_TRUE_FALSE() {
 int main() {
 //    TEST_NULL_TRUE_FALSE();
 //    TEST_NUMS();
-    TEST_STRS();
+//    TEST_STRS();
+//    TEST_ARR();
+    TEST_OBJ();
     printf("%d/%d (%3.2f%%) passed\n", test_pass, test_count, test_pass * 100.0 / test_count);
     return main_ret;
 }
