@@ -134,28 +134,32 @@ static void TEST_STRS() {
 
 
 static void TEST_STRINGIFY(){
-//    TEST_ROUNDTRIP("0");
-//    TEST_ROUNDTRIP("-0");
-//    TEST_ROUNDTRIP("1");
-//    TEST_ROUNDTRIP("-1");
-//    TEST_ROUNDTRIP("1.5");
-//    TEST_ROUNDTRIP("-1.5");
-//    TEST_ROUNDTRIP("3.25");
-//    TEST_ROUNDTRIP("1e+20");
-//    TEST_ROUNDTRIP("1.234e+20");
-//    TEST_ROUNDTRIP("1.234e-20");
-//
-//    TEST_ROUNDTRIP("\"\"");
-//    TEST_ROUNDTRIP("\"Hello\"");
-//    TEST_ROUNDTRIP("\"Hello\\nWorld\"");
-//    TEST_ROUNDTRIP("\"\\\" \\\\ / \\b \\f \\n \\r \\t\"");
+    TEST_ROUNDTRIP("0");
+    TEST_ROUNDTRIP("-0");
+    TEST_ROUNDTRIP("1");
+    TEST_ROUNDTRIP("-1");
+    TEST_ROUNDTRIP("1.5");
+    TEST_ROUNDTRIP("-1.5");
+    TEST_ROUNDTRIP("3.25");
+    TEST_ROUNDTRIP("1e+20");
+    TEST_ROUNDTRIP("1.234e+20");
+    TEST_ROUNDTRIP("1.234e-20");
 
-    std::string json_str = " { "
-                           "\"n\" : null"
-                           " } ";
-    std::string json_str_save = "";
-    Parser parser1;
-    parser1.parse(json_str);
+    TEST_ROUNDTRIP("\"\"");
+    TEST_ROUNDTRIP("\"Hello\"");
+    TEST_ROUNDTRIP("\"Hello\\nWorld\"");
+    TEST_ROUNDTRIP("\"\\\" \\\\ / \\b \\f \\n \\r \\t\"");
+
+    TEST_ROUNDTRIP(" { "
+                   "\"n\" : null , "
+                   "\"f\" : false , "
+                   "\"t\" : true , "
+                   "\"i\" : 123 , "
+                   "\"s\" : \"abc\", "
+                   "\"a\" : [ 1, 2, 3 ],"
+                   "\"o\" : { \"1\" : 1, \"2\" : 2, \"3\" : 3 }"
+                   " } ");
+    TEST_ROUNDTRIP("[ null , false , true , 0 , 1 , \"abc\" ]");
 }
 
 static void TEST_NUMS() {
@@ -203,11 +207,11 @@ static void TEST_NULL_TRUE_FALSE() {
 }
 
 int main() {
-//    TEST_NULL_TRUE_FALSE();
-//    TEST_NUMS();
-//    TEST_STRS();
-//    TEST_ARR();
-//    TEST_OBJ();
+    TEST_NULL_TRUE_FALSE();
+    TEST_NUMS();
+    TEST_STRS();
+    TEST_ARR();
+    TEST_OBJ();
     TEST_STRINGIFY();
     printf("%d/%d (%3.2f%%) passed\n", test_pass, test_count, test_pass * 100.0 / test_count);
     return main_ret;

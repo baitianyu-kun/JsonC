@@ -8,6 +8,7 @@
 #include "string"
 #include "status.h"
 #include "vector"
+#include "unordered_map"
 
 using namespace json;
 
@@ -21,7 +22,7 @@ private:
     std::string str_;
     // vector里既有可能是num，也有可能是str
     std::vector<Parser> arr_;
-    std::unordered_map<std::string, Parser> dict;
+    std::unordered_map<std::string, Parser> dict_;
 
     void parse_whitespace();
 
@@ -45,7 +46,7 @@ private:
 
     return_type parse_object();
 
-    void stringify_string(std::string &str);
+    void stringify_string(std::string &json_str_save,const std::string &str_need_stringify);
 
 
 public:

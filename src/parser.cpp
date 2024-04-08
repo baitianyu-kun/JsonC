@@ -2,11 +2,11 @@
 // Created by 白天宇 on 2024/4/3.
 //
 #include "iostream"
-#include "string"
 #include "../include/parser.h"
-#include "cerrno"
 #include "cstdlib"
-#include "unordered_map"
+#include "cassert"
+#include "cctype"
+#include "cmath"
 
 using namespace json;
 
@@ -29,43 +29,44 @@ return_type Parser::parse(const std::string &str) {
     return res;
 }
 
-void Parser::stringify_string(std::string &json_str) {
-    json_str += '\"';
-    for (auto iter: str_) {
+void Parser::stringify_string(std::string &str_save, const std::string &str_need_stringify) {
+    str_save += '\"';
+    // 只遍历不进行修改，所以可以str_need_stringify加const
+    for (auto iter: str_need_stringify) {
         switch (iter) {
             case '\"':
-                json_str += "\\\""; // \\：反斜杠字符 \，\"表示"
+                str_save += "\\\""; // \\：反斜杠字符 \，\"表示"
                 break;
             case '\\':
-                json_str += "\\\\";
+                str_save += "\\\\";
                 break;
             case '\b':
-                json_str += "\\b";
+                str_save += "\\b";
                 break;
             case '\f':
-                json_str += "\\f";
+                str_save += "\\f";
                 break;
             case '\n':
-                json_str += "\\n";
+                str_save += "\\n";
                 break;
             case '\r':
-                json_str += "\\r";
+                str_save += "\\r";
                 break;
             case '\t':
-                json_str += "\\t";
+                str_save += "\\t";
                 break;
             default: {
                 // 低于 0x20 的字符需要转义为 \u00xx 的形式
                 if (iter < 0x20) {
                     char buffer[7] = {0};
                     snprintf(buffer, 7, "\\u%04X", iter);
-                    json_str += buffer;
+                    str_save += buffer;
                 } else
-                    json_str += iter;
+                    str_save += iter;
             }
         }
     }
-    json_str += '\"';// 添加最后一个双引号
+    str_save += '\"';// 添加最后一个双引号
 }
 
 void Parser::stringify(std::string &json_str) {
@@ -86,22 +87,36 @@ void Parser::stringify(std::string &json_str) {
             break;
         }
         case L_STRING:
-            stringify_string(json_str);
+            stringify_string(json_str, str_);
             break;
         case L_ARRAY: {
             json_str += '[';
-            for (auto iter: arr_) {
+            int count = 0;
+            for (auto &iter: arr_) {
+                if (count > 0) {
+                    json_str += ',';
+                }
                 iter.stringify(json_str);
-                json_str += ',';
+                count++;
             }
-            // 把最后多加的逗号去掉
-            json_str.pop_back();
             json_str += ']';
             break;
         }
         case L_OBJECT:
             json_str += '{';
-
+            int count = 0;
+            // 或者使用auto来替换
+            for (std::pair<const std::string, Parser> &iter: dict_) {
+                if (count > 0) {
+                    json_str += ',';
+                }
+                // key进行序列化
+                stringify_string(json_str, iter.first);
+                json_str += ':';
+                iter.second.stringify(json_str);
+                count++;
+            }
+            json_str += '}';
     }
 }
 
@@ -111,7 +126,7 @@ void prints(std::string str) {
 
 const std::unordered_map<std::string, Parser> &Parser::get_dict_() const {
     assert(type_ == L_OBJECT);
-    return dict;
+    return dict_;
 }
 
 const double &Parser::get_num_() const {
@@ -136,7 +151,7 @@ const std::vector<Parser> &Parser::get_arr_() const {
 // "\"Hello\\nWorld\""  ====>  "Hello\nWorld"
 void Parser::seeALLStr() {
     const char *cur_ptr = v_ptr;
-    while (*cur_ptr != NULL) {
+    while (*cur_ptr != '\0') {
         std::cout << *cur_ptr;
         cur_ptr++;
     }
@@ -260,6 +275,7 @@ return_type Parser::parse_hex4(const char *&p, unsigned &u) {
             return L_PARSE_INVALID_UNICODE_HEX;
         }
     }
+    return L_PARSE_OK;
 }
 
 
@@ -437,7 +453,7 @@ return_type Parser::parse_object() {
     if (*v_ptr == '}') {
         v_ptr++;
         type_ = L_OBJECT;
-        dict = tmp_dict;
+        dict_ = tmp_dict;
         return L_PARSE_OK;
     }
     while (1) {
@@ -468,7 +484,7 @@ return_type Parser::parse_object() {
         } else if (*v_ptr == '}') {
             v_ptr++;
             type_ = L_OBJECT;
-            dict = tmp_dict;
+            dict_ = tmp_dict;
             return L_PARSE_OK;
         } else {
             type_ = L_None;
