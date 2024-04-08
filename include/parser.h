@@ -45,10 +45,14 @@ private:
 
     return_type parse_object();
 
+    void stringify_string(std::string &str);
+
 
 public:
 
     return_type parse(const std::string &str);
+
+    void stringify(std::string &str);
 
     const lept_type &get_type_() const;
 
@@ -64,7 +68,7 @@ public:
     // 为了解决这个问题，你可以将 'get_type_' 函数声明为常量成员函数，通过在函数声明和定义的末尾加上 'const' 关键字，
     const std::vector<Parser> &get_arr_() const;
 
-    const std::unordered_map<std::string,Parser> &get_dict_() const;
+    const std::unordered_map<std::string, Parser> &get_dict_() const;
 
     void seeALLStr();
 

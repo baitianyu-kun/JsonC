@@ -12,6 +12,99 @@ using namespace json;
 
 #define EXPECT(c, ch) do { assert(*c == (ch)); c++; } while(0)
 
+return_type Parser::parse(const std::string &str) {
+    v_ptr = str.c_str();
+    parse_whitespace();
+    return_type res = parse_value();
+    // 不合法的话直接跳出，否则继续去除后面的空格
+    if (res != L_PARSE_OK) {
+        return res;
+    }
+    parse_whitespace();
+    // 去掉 Value 前后的空白，若 json 在一个值之后，空白之后还有其他字符的话，说明该 json 值是不合法的。
+    if (*v_ptr != '\0') {
+        type_ = L_None;
+        return L_PARSE_ROOT_NOT_SINGULAR;
+    }
+    return res;
+}
+
+void Parser::stringify_string(std::string &json_str) {
+    json_str += '\"';
+    for (auto iter: str_) {
+        switch (iter) {
+            case '\"':
+                json_str += "\\\""; // \\：反斜杠字符 \，\"表示"
+                break;
+            case '\\':
+                json_str += "\\\\";
+                break;
+            case '\b':
+                json_str += "\\b";
+                break;
+            case '\f':
+                json_str += "\\f";
+                break;
+            case '\n':
+                json_str += "\\n";
+                break;
+            case '\r':
+                json_str += "\\r";
+                break;
+            case '\t':
+                json_str += "\\t";
+                break;
+            default: {
+                // 低于 0x20 的字符需要转义为 \u00xx 的形式
+                if (iter < 0x20) {
+                    char buffer[7] = {0};
+                    snprintf(buffer, 7, "\\u%04X", iter);
+                    json_str += buffer;
+                } else
+                    json_str += iter;
+            }
+        }
+    }
+    json_str += '\"';// 添加最后一个双引号
+}
+
+void Parser::stringify(std::string &json_str) {
+    switch (type_) {
+        case L_NULL:
+            json_str += "null";
+            break;
+        case L_TRUE:
+            json_str += "true";
+            break;
+        case L_FALSE:
+            json_str += "false";
+            break;
+        case L_NUMBER: {
+            char buffer[32] = {0};
+            snprintf(buffer, 32, "%.17g", num_);
+            json_str += buffer;
+            break;
+        }
+        case L_STRING:
+            stringify_string(json_str);
+            break;
+        case L_ARRAY: {
+            json_str += '[';
+            for (auto iter: arr_) {
+                iter.stringify(json_str);
+                json_str += ',';
+            }
+            // 把最后多加的逗号去掉
+            json_str.pop_back();
+            json_str += ']';
+            break;
+        }
+        case L_OBJECT:
+            json_str += '{';
+
+    }
+}
+
 void prints(std::string str) {
     std::cout << str << std::endl;
 }
@@ -197,23 +290,6 @@ void Parser::parse_encode_utf8(std::string &tmp, unsigned &u) {
     }
 }
 
-
-return_type Parser::parse(const std::string &str) {
-    v_ptr = str.c_str();
-    parse_whitespace();
-    return_type res = parse_value();
-    // 不合法的话直接跳出，否则继续去除后面的空格
-    if (res != L_PARSE_OK) {
-        return res;
-    }
-    parse_whitespace();
-    // 去掉 Value 前后的空白，若 json 在一个值之后，空白之后还有其他字符的话，说明该 json 值是不合法的。
-    if (*v_ptr != '\0') {
-        type_ = L_None;
-        return L_PARSE_ROOT_NOT_SINGULAR;
-    }
-    return res;
-}
 
 void Parser::parse_whitespace() {
     /* 过滤掉 json 字符串中的空白，即空格符、制表符、换行符、回车符 */

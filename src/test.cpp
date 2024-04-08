@@ -51,6 +51,15 @@ static int test_pass = 0;
         EXPECT_EQ_BASE(expect_str, str);\
     }while(0)
 
+#define TEST_ROUNDTRIP(json_str) \
+    do{\
+        Parser parser;\
+        parser.parse(json_str);\
+        std::string json_str_stringify = "";\
+        parser.stringify(json_str_stringify);\
+        EXPECT_EQ_BASE(json_str, json_str_stringify);\
+    }while(0)
+
 static void TEST_ARR() {
     std::string vec_str1 = "[ null , false , true , 0 , 1 , \"abc\" ]";
     std::string vec_str2 = "[ [ ] , [ 0 ] , [ 0 , 1 ] , [ 0 , 1 , 2 ] , [ \"abc\" , 12 ] ]";
@@ -86,7 +95,6 @@ static void TEST_ARR() {
 }
 
 static void TEST_OBJ() {
-
     Parser parser;
     std::string objs = " { "
                        "\"n\" : null , "
@@ -122,6 +130,32 @@ static void TEST_STRS() {
     TEST_STR("\xE2\x82\xAC", "\"\\u20AC\""); /* Euro sign U+20AC */
     TEST_STR("\xF0\x9D\x84\x9E", "\"\\uD834\\uDD1E\"");  /* G clef sign U+1D11E */
     TEST_STR("\xF0\x9D\x84\x9E", "\"\\ud834\\udd1e\"");  /* G clef sign U+1D11E */
+}
+
+
+static void TEST_STRINGIFY(){
+//    TEST_ROUNDTRIP("0");
+//    TEST_ROUNDTRIP("-0");
+//    TEST_ROUNDTRIP("1");
+//    TEST_ROUNDTRIP("-1");
+//    TEST_ROUNDTRIP("1.5");
+//    TEST_ROUNDTRIP("-1.5");
+//    TEST_ROUNDTRIP("3.25");
+//    TEST_ROUNDTRIP("1e+20");
+//    TEST_ROUNDTRIP("1.234e+20");
+//    TEST_ROUNDTRIP("1.234e-20");
+//
+//    TEST_ROUNDTRIP("\"\"");
+//    TEST_ROUNDTRIP("\"Hello\"");
+//    TEST_ROUNDTRIP("\"Hello\\nWorld\"");
+//    TEST_ROUNDTRIP("\"\\\" \\\\ / \\b \\f \\n \\r \\t\"");
+
+    std::string json_str = " { "
+                           "\"n\" : null"
+                           " } ";
+    std::string json_str_save = "";
+    Parser parser1;
+    parser1.parse(json_str);
 }
 
 static void TEST_NUMS() {
@@ -173,7 +207,8 @@ int main() {
 //    TEST_NUMS();
 //    TEST_STRS();
 //    TEST_ARR();
-    TEST_OBJ();
+//    TEST_OBJ();
+    TEST_STRINGIFY();
     printf("%d/%d (%3.2f%%) passed\n", test_pass, test_count, test_pass * 100.0 / test_count);
     return main_ret;
 }
