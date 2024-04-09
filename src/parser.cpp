@@ -105,7 +105,7 @@ void Parser::stringify(std::string &json_str) {
         case L_OBJECT:
             json_str += '{';
             int count = 0;
-            // 或者使用auto来替换
+            // 或者使用auto&来替换，加引用,unorderedmap里面key是const的
             for (std::pair<const std::string, Parser> &iter: dict_) {
                 if (count > 0) {
                     json_str += ',';
@@ -117,43 +117,6 @@ void Parser::stringify(std::string &json_str) {
                 count++;
             }
             json_str += '}';
-    }
-}
-
-void prints(std::string str) {
-    std::cout << str << std::endl;
-}
-
-const std::unordered_map<std::string, Parser> &Parser::get_dict_() const {
-    assert(type_ == L_OBJECT);
-    return dict_;
-}
-
-const double &Parser::get_num_() const {
-    assert(type_ == L_NUMBER);
-    return num_;
-}
-
-const lept_type &Parser::get_type_() const {
-    return type_;
-}
-
-const std::string &Parser::get_string_() const {
-    assert(type_ == L_STRING);
-    return str_;
-}
-
-const std::vector<Parser> &Parser::get_arr_() const {
-    assert(type_ == L_ARRAY);
-    return arr_;
-}
-
-// "\"Hello\\nWorld\""  ====>  "Hello\nWorld"
-void Parser::seeALLStr() {
-    const char *cur_ptr = v_ptr;
-    while (*cur_ptr != '\0') {
-        std::cout << *cur_ptr;
-        cur_ptr++;
     }
 }
 
@@ -490,6 +453,167 @@ return_type Parser::parse_object() {
             type_ = L_None;
             return L_PARSE_MISS_COMMA_OR_CURLY_BRACKET;
         }
+    }
+}
+
+void prints(std::string str) {
+    std::cout << str << std::endl;
+}
+
+const std::unordered_map<std::string, Parser> &Parser::get_dict_() const {
+    assert(type_ == L_OBJECT);
+    return dict_;
+}
+
+const double &Parser::get_num_() const {
+    assert(type_ == L_NUMBER);
+    return num_;
+}
+
+const lept_type &Parser::get_type_() const {
+    return type_;
+}
+
+const std::string &Parser::get_string_() const {
+    assert(type_ == L_STRING);
+    return str_;
+}
+
+// 对数组的操作
+const std::vector<Parser> &Parser::get_arr_() const {
+    assert(type_ == L_ARRAY);
+    return arr_;
+}
+
+const size_t &Parser::get_arr_len() const {
+    assert(type_ == L_ARRAY);
+    return arr_.size();
+}
+
+const Parser &Parser::get_arr_element(size_t index) const {
+    assert(type_ == L_ARRAY);
+    return arr_[index];
+}
+
+void Parser::set_arr_(std::vector<Parser> &arr) {
+    if (type_ == L_ARRAY) {
+        arr_ = arr;
+    } else {
+        type_ = L_ARRAY;
+        arr_ = arr;
+    }
+}
+
+void Parser::push_arr_(Parser &arr) {
+    assert(type_ == L_ARRAY);
+    arr_.push_back(arr);
+}
+
+void Parser::pop_arr_() {
+    assert(type_ == L_ARRAY);
+    arr_.pop_back();
+}
+
+void Parser::insert_arr_(Parser &arr, size_t index) {
+    assert(type_ == L_ARRAY);
+    arr_.insert(arr_.begin() + index, arr);
+}
+
+void Parser::erase_arr_(size_t index, size_t count) {
+    assert(type_ == L_ARRAY);
+    arr_.erase(arr_.begin() + index, arr_.begin() + index + count);
+}
+
+void Parser::clear_arr_() {
+    assert(type_ == L_ARRAY);
+    arr_.clear();
+}
+
+// 对对象的操作
+const size_t &Parser::get_dict_len() const {
+    assert(type_ == L_OBJECT);
+    return dict_.size();
+}
+
+// 在常量成员函数中不能修改成员变量的值（静态成员变量除外）;
+// 在这个函数，后面被标成了const，所以不能修改成员变量，即成员变量也为const
+// 但是[]取key的时候如果找不到key时候会添加默认值，这样显然与const相背，所以可以用at方法，但是需要处理找不到的时候抛出的异常情况
+const Parser &Parser::get_dict_element(std::string &key) const {
+    assert(type_ == L_OBJECT);
+    if (dict_.find(key) != dict_.end()) {
+        // 运算符[]方法是非const的，当找不到要查找的key时，它可能会添加默认值。这显然与const相违背。return dict_[key] ==> std::unordered_map.at(key);
+        return dict_.at(key);
+    }
+}
+
+Parser &Parser::get_dict_element2(std::string &key) {
+    assert(type_ == L_OBJECT);
+    return dict_[key];
+}
+
+void Parser::insert_dict_(std::string &key, Parser &dict) {
+    assert(type_ == L_OBJECT);
+    dict_.insert(std::pair<std::string, Parser>(key, dict));
+}
+
+void Parser::erase_dict_(std::string &key) {
+    assert(type_ == L_OBJECT);
+    dict_.erase(key);
+}
+
+void Parser::swap_dict_(std::unordered_map<std::string, Parser> &dict) {
+    assert(type_ == L_OBJECT);
+    dict_.swap(dict);
+}
+
+void Parser::clear_dict_() {
+    assert(type_ == L_OBJECT);
+    dict_.clear();
+}
+
+bool Parser::operator==(const Parser &other) const {
+    if (type_ != other.type_) {
+        return false;
+    }
+    switch (type_) {
+        case L_NUMBER:
+            return num_ == other.num_;
+        case L_STRING:
+            return str_ == other.str_;
+        case L_ARRAY:
+            // 因为vector里面存的还是Parser，所以会进入vector里面嵌套调用==号，又因为other是const的
+            // 所以为了让other的vector里面的Parser能调用==，需要将该函数转换为const常量函数才能够被调用。
+            return arr_ == other.arr_;
+        case L_OBJECT: { // 在C++中，switch-case语句中的case标签后的代码不需要花括号 {}，除非在case语句中声明变量。
+            // 先判断key value是否相等
+            if (dict_.size() != other.dict_.size()) {
+                return false;
+            }
+            // 遍历key value 判断是否相等
+            for (auto &this_iter: dict_) {
+                if (this_iter.second != other.dict_.at(this_iter.first)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        default:
+            return true;
+    }
+}
+
+// 给上面用
+bool Parser::operator!=(const Parser &other) const {
+    return !(*this == other);
+}
+
+
+// "\"Hello\\nWorld\""  ====>  "Hello\nWorld"
+void Parser::seeALLStr() {
+    const char *cur_ptr = v_ptr;
+    while (*cur_ptr != '\0') {
+        std::cout << *cur_ptr;
+        cur_ptr++;
     }
 }
 

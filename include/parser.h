@@ -46,7 +46,7 @@ private:
 
     return_type parse_object();
 
-    void stringify_string(std::string &json_str_save,const std::string &str_need_stringify);
+    void stringify_string(std::string &json_str_save, const std::string &str_need_stringify);
 
 
 public:
@@ -69,9 +69,45 @@ public:
     // 为了解决这个问题，你可以将 'get_type_' 函数声明为常量成员函数，通过在函数声明和定义的末尾加上 'const' 关键字，
     const std::vector<Parser> &get_arr_() const;
 
+    const size_t &get_arr_len() const;
+
+    const Parser &get_arr_element(size_t index) const;
+
+    void set_arr_(std::vector<Parser> &arr);
+
+    void push_arr_(Parser &arr);
+
+    void pop_arr_();
+
+    void insert_arr_(Parser &arr, size_t index);
+
+    // 根据索引删除数组中的某段区间内的元素
+    void erase_arr_(size_t index, size_t count);
+
+    void clear_arr_();
+
     const std::unordered_map<std::string, Parser> &get_dict_() const;
 
+    const size_t &get_dict_len() const;
+
+    const Parser &get_dict_element(std::string &key) const;
+
+    Parser &get_dict_element2(std::string &key);
+
+    void insert_dict_(std::string &key, Parser &dict);
+
+    void erase_dict_(std::string &key);
+
+    void swap_dict_(std::unordered_map<std::string, Parser> &dict);
+
+    void clear_dict_();
+
     void seeALLStr();
+
+    // 运算符重载，判断两个json解析的树是否相同
+    bool operator==(const Parser &other) const;
+
+    bool operator!=(const Parser &other) const;
 
 };
 
