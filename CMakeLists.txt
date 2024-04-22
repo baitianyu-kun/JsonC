@@ -9,5 +9,6 @@ add_executable(JsonC
         include/parser.h
         src/parser.cpp
         include/status.h
-        src/testStudent.cpp
+        include/student_map.h
+        src/mainParseStudent.cpp
 )
