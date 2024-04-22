@@ -1,7 +1,7 @@
 //
 // Created by 白天宇 on 2024/4/22.
 //
-#include "../include/student_map.h"
+#include "student_map.h"
 
 using namespace json;
 

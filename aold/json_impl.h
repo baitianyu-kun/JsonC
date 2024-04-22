@@ -7,8 +7,8 @@
 
 #include "iostream"
 #include "string"
-#include "parser.h"
-#include "status.h"
+#include "../include/parser.h"
+#include "../include/status.h"
 
 using namespace json;
 

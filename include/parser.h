@@ -110,7 +110,24 @@ public:
 
     bool operator!=(const Parser &other) const;
 
-
+    template<class T>
+    void setResult(T &result) {
+        for (auto &m: result.template get_members<T>()) {
+            Parser tmp_parse = get_dict_().at(m.first);
+            lept_type val_type = tmp_parse.get_type_();
+            if (val_type == L_STRING) {
+                result.set_member_by_key(result, m.first, tmp_parse.get_string_());
+            } else if (val_type == L_NUMBER) {
+                result.set_member_by_key(result, m.first, tmp_parse.get_num_());
+            } else if (val_type == L_NULL) {
+                result.set_member_by_key(result, m.first, "null");
+            } else if (val_type == L_TRUE) {
+                result.set_member_by_key(result, m.first, "true");
+            } else if (val_type == L_FALSE) {
+                result.set_member_by_key(result, m.first, "false");
+            }
+        }
+    }
 };
 
 #endif //MYJSON5_PARSER_H

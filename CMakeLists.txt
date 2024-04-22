@@ -4,11 +4,10 @@ project(JsonC)
 set(CMAKE_CXX_STANDARD 17)
 
 add_executable(JsonC
-        include/json_impl.h
-        src/json_impl.cpp
         include/parser.h
         src/parser.cpp
         include/status.h
-        include/student_map.h
-        src/mainParseStudent.cpp
+        include/reflection.h
+        include/cars.h
+        src/TestReflect.cpp
 )

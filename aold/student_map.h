@@ -15,7 +15,6 @@
 using namespace json;
 
 #define varName(x) #x
-
 #define MEMBER(T, M) { typeid(member_type(&T::M)), offsetof(T, M) }
 
 struct Member {
@@ -25,8 +24,8 @@ struct Member {
 
 class Student {
 private:
-    int age = 12;
-    int number = 1234;
+    double age = 12;
+    double number = 1234;
     std::string name = "baitainyu";
     std::string phone;
     std::string address;
@@ -76,11 +75,11 @@ public:
         *reinterpret_cast<M *>(reinterpret_cast<char *>(&a) + get_members<T>().at(key).offset) = value;
     };
 
-    int getAge() const {
+    double getAge() const {
         return age;
     }
 
-    int getNumber() const {
+    double getNumber() const {
         return number;
     }
 
