@@ -109,6 +109,7 @@ public:
 
     bool operator!=(const Parser &other) const;
 
+
 };
 
 #endif //MYJSON5_PARSER_H

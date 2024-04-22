@@ -329,15 +329,15 @@ static void TEST_PRASE_ALL() {
     std::cout << json_save << std::endl;
 }
 
-int main() {
-    TEST_NULL_TRUE_FALSE();
-    TEST_NUMS();
-    TEST_STRS();
-    TEST_ARR();
-    TEST_OBJ();
-    TEST_STRINGIFY();
-    TEST_EQUAL();
-    TEST_PRASE_ALL();
-    printf("%d/%d (%3.2f%%) passed\n", test_pass, test_count, test_pass * 100.0 / test_count);
-    return main_ret;
-}
+//int main() {
+//    TEST_NULL_TRUE_FALSE();
+//    TEST_NUMS();
+//    TEST_STRS();
+//    TEST_ARR();
+//    TEST_OBJ();
+//    TEST_STRINGIFY();
+//    TEST_EQUAL();
+//    TEST_PRASE_ALL();
+//    printf("%d/%d (%3.2f%%) passed\n", test_pass, test_count, test_pass * 100.0 / test_count);
+//    return main_ret;
+//}

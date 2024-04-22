@@ -8,5 +8,6 @@ add_executable(JsonC
         src/json_impl.cpp
         include/parser.h
         src/parser.cpp
-        src/test.cpp
-        include/status.h)
+        include/status.h
+        src/testStudent.cpp
+)
