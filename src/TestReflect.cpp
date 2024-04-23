@@ -19,10 +19,12 @@ int main() {
     Parser parser;
     parser.parse(json_str);
     Cars cars;
-    parser.setResult(cars);
-    std::cout<<cars.getAge()<<std::endl;
-    std::cout<<cars.getModels()<<std::endl;
-    std::cout<<cars.getAddress()<<std::endl;
-    std::cout<<cars.getNumber()<<std::endl;
-    std::cout<<cars.getPrice()<<std::endl;
+//    parser.setResult(cars);
+//    std::cout<<cars.getAge()<<std::endl;
+//    std::cout<<cars.getModels()<<std::endl;
+//    std::cout<<cars.getAddress()<<std::endl;
+//    std::cout<<cars.getNumber()<<std::endl;
+//    std::cout<<cars.getPrice()<<std::endl;
+    size_t offets = cars.get_members<Cars>().at("models").offset;
+    std::cout<<reinterpret_cast<char *>(&cars)+offets;
 }
